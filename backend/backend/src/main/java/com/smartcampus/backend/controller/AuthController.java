@@ -1,11 +1,16 @@
 package com.smartcampus.backend.controller;
 
+import com.smartcampus.backend.dto.GoogleLoginRequest;
 import com.smartcampus.backend.dto.LoginRequest;
 import com.smartcampus.backend.entity.User;
 import com.smartcampus.backend.service.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -42,5 +47,8 @@ public class AuthController {
     public User uploadProfilePicture(@PathVariable String userId, @RequestBody Map<String, String> request) {
         String pictureData = request.get("picture");
         return authService.uploadProfilePicture(userId, pictureData);
+    @PostMapping("/google")
+    public Map<String, Object> googleLogin(@RequestBody GoogleLoginRequest request) {
+        return authService.googleLogin(request.getCredential());
     }
 }
