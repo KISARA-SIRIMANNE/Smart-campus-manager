@@ -3,9 +3,9 @@
   display: grid;
   place-items: center;
   padding: 40px 20px;
-  background: radial-gradient(circle at 15% 15%, #eef4ff, transparent 38%),
-    radial-gradient(circle at 88% 10%, #dde8fb, transparent 42%),
-    linear-gradient(145deg, #fbfdff 0%, #eef3fb 48%, #dbe5f5 100%);
+  background: radial-gradient(circle at 15% 15%, #e8f2ff, transparent 38%),
+    radial-gradient(circle at 88% 10%, #d8e9ff, transparent 42%),
+    linear-gradient(145deg, #f8fbff 0%, #edf5ff 45%, #d6e6ff 100%);
 }
 
 .register-card {
@@ -17,14 +17,14 @@
     rgba(255, 255, 255, 0.94),
     rgba(237, 246, 255, 0.82)
   );
-  border: 1px solid rgba(30, 41, 59, 0.2);
-  box-shadow: 0 16px 38px rgba(30, 41, 59, 0.16);
+  border: 1px solid rgba(76, 130, 210, 0.25);
+  box-shadow: 0 16px 38px rgba(67, 103, 156, 0.2);
   backdrop-filter: blur(8px);
 }
 
 .register-card h2 {
   margin: 0 0 22px;
-  color: #1e293b;
+  color: #18458d;
   letter-spacing: 0.5px;
 }
 
@@ -35,7 +35,7 @@
 
 .register-input-row {
   display: block;
-  border-bottom: 1px solid rgba(30, 41, 59, 0.35);
+  border-bottom: 1px solid rgba(92, 138, 207, 0.5);
   padding-bottom: 10px;
 }
 
@@ -43,22 +43,22 @@
   width: 100%;
   border: none;
   background: transparent;
-  color: #1e293b;
+  color: #1d3c72;
   font-size: 20px;
   outline: none;
 }
 
 .register-input-row input::placeholder {
-  color: rgba(30, 41, 59, 0.6);
+  color: rgba(45, 91, 158, 0.65);
 }
 
 .register-select-wrap select {
   width: 100%;
   border-radius: 10px;
-  border: 1px solid rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(92, 138, 207, 0.5);
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.72);
-  color: #1e293b;
+  color: #1d3c72;
   outline: none;
   font-weight: 600;
 }
@@ -76,7 +76,7 @@
   letter-spacing: 2px;
   font-weight: 700;
   color: #f6fbff;
-  background: linear-gradient(90deg, #1e293b, #32435e);
+  background: linear-gradient(90deg, #2e6fd8, #4d93ff);
   cursor: pointer;
 }
 
@@ -86,7 +86,7 @@
 
 .register-message {
   margin: 14px 0 0;
-  color: #1e293b;
+  color: #1f4d9a;
 }
 
 @media (max-width: 600px) {
