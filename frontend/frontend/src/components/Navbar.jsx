@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import "./Navbar.css";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -10,72 +11,66 @@ export default function Navbar() {
   };
 
   return (
-    <div
-      style={{
-        background: "#1e293b",
-        padding: "15px 30px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        color: "white",
-      }}
-    >
-      <h2 style={{ margin: 0 }}>SmartCampus</h2>
+    <nav className="navbar">
+      <Link to="/" className="navbar-logo">
+        <span className="logo-badge">🎓</span>
+        <span>
+          SMART CAMPUS
+          <small>SYSTEM</small>
+        </span>
+      </Link>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-        <Link to="/" style={{ color: "white", textDecoration: "none" }}>
-          Home
-        </Link>
+      <div className="navbar-links">
+        <Link to="/" className="nav-link active">Home</Link>
 
-        {!user && (
-          <>
-            <Link to="/login" style={{ color: "white", textDecoration: "none" }}>
-              Login
-            </Link>
-            <Link to="/register" style={{ color: "white", textDecoration: "none" }}>
-              Register
-            </Link>
-          </>
+        {user && user.role === "ADMIN" && (
+          <Link to="/admin-dashboard" className="nav-link">
+            Dashboard
+          </Link>
         )}
 
         {user && (
           <>
-            {user.role === "ADMIN" && (
-              <Link
-                to="/admin-dashboard"
-                style={{ color: "white", textDecoration: "none" }}
-              >
-                Dashboard
-              </Link>
-            )}
+            <Link to="/resources" className="nav-link">Resources</Link>
+            <Link to="/bookings" className="nav-link">Bookings</Link>
+            <Link to="/tickets" className="nav-link">Tickets</Link>
+            <Link to="/user-dashboard" className="nav-link">My Page</Link>
+          </>
+        )}
 
-            <Link to="/resources" style={{ color: "white", textDecoration: "none" }}>
-              Resources
-            </Link>
-
-            <Link to="/bookings" style={{ color: "white", textDecoration: "none" }}>
-              Bookings
-            </Link>
-
-            <Link to="/tickets" style={{ color: "white", textDecoration: "none" }}>
-              Tickets
-            </Link>
-
-            <Link
-              to="/user-dashboard"
-              style={{ color: "white", textDecoration: "none" }}
-            >
-              My Page
-            </Link>
-
-            <span>
-              {user.name} ({user.role})
-            </span>
-
-            <button onClick={handleLogout}>Logout</button>
+        {!user && (
+          <>
+            <Link to="/login" className="nav-link">Login</Link>
+            <Link to="/register" className="nav-link">Register</Link>
           </>
         )}
       </div>
-    </div>
+
+      <div className="navbar-actions">
+        <button className="circle-btn">⌕</button>
+
+        {user ? (
+          <>
+            <div className="user-pill">
+              <span className="user-avatar">
+                {user?.name?.charAt(0)?.toUpperCase() || "U"}
+              </span>
+              <span>
+                Welcome, {user.name}
+                <small>{user.role}</small>
+              </span>
+            </div>
+
+            <button className="logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <Link to="/login" className="login-pill">
+            Login
+          </Link>
+        )}
+      </div>
+    </nav>
   );
 }

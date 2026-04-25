@@ -1,0 +1,237 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 50;
+  min-height: 78px;
+  padding: 0 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(248, 251, 255, 0.82);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-bottom: 1px solid rgba(147, 197, 253, 0.45);
+  box-shadow: 0 14px 35px rgba(37, 99, 235, 0.08);
+  box-sizing: border-box;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  text-decoration: none;
+  color: #061b45;
+  font-weight: 950;
+  font-size: 22px;
+  line-height: 1.1;
+  transition: 0.25s ease;
+}
+
+.navbar-logo:hover {
+  transform: translateY(-1px);
+}
+
+.navbar-logo small {
+  display: block;
+  margin-top: 3px;
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.logo-badge {
+  width: 54px;
+  height: 54px;
+  border: 3px solid rgba(37, 99, 235, 0.85);
+  color: #ffffff;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb, #38bdf8);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.3);
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(191, 219, 254, 0.85);
+}
+
+.nav-link {
+  color: #0b1f44;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 12px 17px;
+  border-radius: 999px;
+  position: relative;
+  transition: 0.25s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.25);
+  transform: translateY(-1px);
+}
+
+.nav-link.active::after,
+.nav-link:hover::after {
+  display: none;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.circle-btn {
+  width: 50px;
+  height: 50px;
+  border: 1px solid rgba(191, 219, 254, 0.9);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #061b45;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+  transition: 0.25s ease;
+}
+
+.circle-btn:hover {
+  color: #ffffff;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  transform: translateY(-2px);
+}
+
+.user-pill,
+.login-pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 16px 8px 8px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #061b45;
+  font-weight: 850;
+  border: 1px solid rgba(191, 219, 254, 0.9);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+  transition: 0.25s ease;
+}
+
+.user-pill:hover,
+.login-pill:hover {
+  transform: translateY(-2px);
+  border-color: #60a5fa;
+  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.15);
+}
+
+.login-pill {
+  padding: 13px 22px;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: #ffffff;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #1d4ed8, #38bdf8);
+  color: white;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 950;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+}
+
+.user-pill span:last-child {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.user-pill small {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.logout-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  padding: 13px 20px;
+  border-radius: 999px;
+  font-weight: 850;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(239, 68, 68, 0.22);
+  transition: 0.25s ease;
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(239, 68, 68, 0.3);
+}
+
+@media (max-width: 1150px) {
+  .navbar {
+    padding: 18px 24px;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .navbar-links,
+  .navbar-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 16px;
+  }
+
+  .navbar-logo {
+    font-size: 20px;
+  }
+
+  .logo-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+  }
+
+  .navbar-links {
+    width: 100%;
+    border-radius: 22px;
+    justify-content: center;
+  }
+
+  .nav-link {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .navbar-actions {
+    width: 100%;
+  }
+
+  .user-pill {
+    max-width: 100%;
+  }
+}
