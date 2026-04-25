@@ -1,0 +1,135 @@
+.register-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #020617, #1e3a8a, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  color: white;
+}
+
+.register-card {
+  width: 100%;
+  max-width: 460px;
+  background: rgba(30, 41, 59, 0.96);
+  padding: 35px;
+  border-radius: 18px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.register-header h2 {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.register-header p {
+  color: #cbd5e1;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-size: 14px;
+  color: #e2e8f0;
+}
+
+.input-group input,
+.input-group select {
+  padding: 13px 14px;
+  border-radius: 10px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: white;
+  outline: none;
+  font-size: 15px;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+.register-btn {
+  margin-top: 8px;
+  padding: 13px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.register-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+.register-btn:disabled {
+  background: #64748b;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.register-message {
+  text-align: center;
+  margin-top: 18px;
+  font-weight: 500;
+}
+
+.register-message.success {
+  color: #22c55e;
+}
+
+.register-message.error {
+  color: #f87171;
+}
+
+.login-text {
+  text-align: center;
+  margin-top: 22px;
+  color: #cbd5e1;
+}
+
+.login-text a {
+  color: #93c5fd;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.login-text a:hover {
+  text-decoration: underline;
+}
+.google-section {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.divider {
+  color: #94a3b8;
+  margin-bottom: 14px;
+  font-size: 14px;
+}

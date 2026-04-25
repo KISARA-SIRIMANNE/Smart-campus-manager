@@ -1,5 +1,6 @@
 package com.smartcampus.backend.controller;
 
+import com.smartcampus.backend.dto.GoogleLoginRequest;
 import com.smartcampus.backend.dto.LoginRequest;
 import com.smartcampus.backend.entity.User;
 import com.smartcampus.backend.service.AuthService;
@@ -26,5 +27,10 @@ public class AuthController {
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody LoginRequest request) {
         return authService.login(request.getEmail(), request.getPassword());
+    }
+
+    @PostMapping("/google")
+    public Map<String, Object> googleLogin(@RequestBody GoogleLoginRequest request) {
+        return authService.googleLogin(request.getCredential());
     }
 }

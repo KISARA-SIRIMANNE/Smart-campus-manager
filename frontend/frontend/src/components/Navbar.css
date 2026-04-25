@@ -1,237 +1,335 @@
+* {
+  box-sizing: border-box;
+}
+
+/* ── Navbar Shell ── */
 .navbar {
   position: sticky;
   top: 0;
   left: 0;
   width: 100%;
   z-index: 50;
-  min-height: 78px;
-  padding: 0 56px;
+  height: 70px;
+  padding: 0 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(248, 251, 255, 0.82);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  border-bottom: 1px solid rgba(147, 197, 253, 0.45);
-  box-shadow: 0 14px 35px rgba(37, 99, 235, 0.08);
-  box-sizing: border-box;
+  gap: 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e8edf5;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+/* ── Logo ── */
 .navbar-logo {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 11px;
   text-decoration: none;
-  color: #061b45;
-  font-weight: 950;
-  font-size: 22px;
-  line-height: 1.1;
-  transition: 0.25s ease;
-}
-
-.navbar-logo:hover {
-  transform: translateY(-1px);
-}
-
-.navbar-logo small {
-  display: block;
-  margin-top: 3px;
-  color: #2563eb;
-  font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
+  flex-shrink: 0;
 }
 
 .logo-badge {
-  width: 54px;
-  height: 54px;
-  border: 3px solid rgba(37, 99, 235, 0.85);
-  color: #ffffff;
-  border-radius: 18px;
-  display: grid;
-  place-items: center;
-  font-size: 24px;
-  background: linear-gradient(135deg, #1d4ed8, #2563eb, #38bdf8);
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
 }
 
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: 0.3px;
+  line-height: 1.15;
+}
+
+.logo-text small {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #2563eb;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+/* ── Nav Links Pill Container ── */
 .navbar-links {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.68);
-  border: 1px solid rgba(191, 219, 254, 0.85);
+  gap: 2px;
+  padding: 5px 6px;
+  border-radius: 14px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
 }
 
+/* ── Individual Nav Link ── */
 .nav-link {
-  color: #0b1f44;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #475569;
   text-decoration: none;
-  font-weight: 800;
-  font-size: 14px;
-  padding: 12px 17px;
-  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border-radius: 10px;
   position: relative;
-  transition: 0.25s ease;
+  transition: background 0.18s ease, color 0.18s ease;
+  white-space: nowrap;
 }
 
-.nav-link:hover,
+.nav-link svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.nav-link:hover {
+  background: white;
+  color: #1d4ed8;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+}
+
+.nav-link:hover svg {
+  opacity: 1;
+}
+
+/* Active: white bg + blue text + bottom dot indicator */
 .nav-link.active {
-  color: #ffffff;
-  background: linear-gradient(135deg, #1d4ed8, #2563eb);
-  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.25);
-  transform: translateY(-1px);
+  background: white;
+  color: #1d4ed8;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+  font-weight: 700;
 }
 
-.nav-link.active::after,
-.nav-link:hover::after {
-  display: none;
+.nav-link.active svg {
+  opacity: 1;
 }
 
+.nav-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  border-radius: 999px;
+  background: #2563eb;
+}
+
+/* ── Actions ── */
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
-.circle-btn {
-  width: 50px;
-  height: 50px;
-  border: 1px solid rgba(191, 219, 254, 0.9);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.86);
-  color: #061b45;
-  font-size: 24px;
+/* ── Bell ── */
+.bell-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  display: grid;
+  place-items: center;
   cursor: pointer;
-  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
-  transition: 0.25s ease;
+  transition: 0.18s ease;
 }
 
-.circle-btn:hover {
-  color: #ffffff;
-  background: linear-gradient(135deg, #1d4ed8, #2563eb);
-  transform: translateY(-2px);
+.bell-btn:hover {
+  background: white;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-.user-pill,
-.login-pill {
+.bell-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  border: 2px solid white;
+  line-height: 1;
+}
+
+/* ── User Pill ── */
+.user-pill {
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 8px 16px 8px 8px;
-  border-radius: 999px;
-  text-decoration: none;
-  color: #061b45;
-  font-weight: 850;
-  border: 1px solid rgba(191, 219, 254, 0.9);
-  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
-  transition: 0.25s ease;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  cursor: default;
+  transition: 0.18s ease;
 }
 
-.user-pill:hover,
-.login-pill:hover {
-  transform: translateY(-2px);
-  border-color: #60a5fa;
-  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.15);
-}
-
-.login-pill {
-  padding: 13px 22px;
-  background: linear-gradient(135deg, #1d4ed8, #2563eb);
-  color: #ffffff;
+.user-pill:hover {
+  border-color: #bfdbfe;
+  background: white;
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   background: linear-gradient(135deg, #1d4ed8, #38bdf8);
   color: white;
-  border-radius: 50%;
+  border-radius: 10px;
   display: grid;
   place-items: center;
-  font-weight: 950;
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+  font-weight: 900;
+  font-size: 15px;
+  flex-shrink: 0;
 }
 
-.user-pill span:last-child {
+.user-info {
   display: flex;
   flex-direction: column;
-  font-size: 14px;
+  gap: 1px;
   line-height: 1.2;
 }
 
-.user-pill small {
-  color: #64748b;
-  font-size: 11px;
-  font-weight: 700;
-  margin-top: 2px;
+.user-welcome {
+  font-size: 10.5px;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
+.user-name {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.user-name svg {
+  color: #64748b;
+}
+
+.user-role {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #2563eb;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.role-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  display: inline-block;
+}
+
+/* ── Logout ── */
 .logout-btn {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #ef4444;
   color: white;
   border: none;
-  padding: 13px 20px;
-  border-radius: 999px;
-  font-weight: 850;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13.5px;
   cursor: pointer;
-  box-shadow: 0 12px 24px rgba(239, 68, 68, 0.22);
-  transition: 0.25s ease;
+  transition: 0.18s ease;
+  white-space: nowrap;
 }
 
 .logout-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 30px rgba(239, 68, 68, 0.3);
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
-@media (max-width: 1150px) {
-  .navbar {
-    padding: 18px 24px;
-    flex-direction: column;
-    gap: 16px;
-  }
+/* ── Login Pill (logged out) ── */
+.login-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  border-radius: 10px;
+  background: #1d4ed8;
+  color: white;
+  font-weight: 700;
+  font-size: 13.5px;
+  text-decoration: none;
+  transition: 0.18s ease;
+}
 
-  .navbar-links,
-  .navbar-actions {
+.login-pill:hover {
+  background: #1e40af;
+  transform: translateY(-1px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+  .navbar {
     flex-wrap: wrap;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 768px) {
-  .navbar {
-    padding: 16px;
-  }
-
-  .navbar-logo {
-    font-size: 20px;
-  }
-
-  .logo-badge {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
+    height: auto;
+    padding: 14px 20px;
+    gap: 12px;
   }
 
   .navbar-links {
+    order: 3;
     width: 100%;
-    border-radius: 22px;
     justify-content: center;
-  }
-
-  .nav-link {
-    padding: 10px 14px;
-    font-size: 13px;
+    flex-wrap: wrap;
   }
 
   .navbar-actions {
-    width: 100%;
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar {
+    padding: 12px 14px;
   }
 
-  .user-pill {
-    max-width: 100%;
+  .nav-link {
+    padding: 8px 10px;
+    font-size: 12.5px;
+  }
+
+  .nav-link span {
+    display: none;
+  }
+
+  .user-welcome {
+    display: none;
+  }
+
+  .logout-btn span {
+    display: none;
   }
 }

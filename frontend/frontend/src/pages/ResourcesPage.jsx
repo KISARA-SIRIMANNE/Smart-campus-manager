@@ -14,6 +14,41 @@ const initialForm = {
   availabilityStatus: "AVAILABLE",
 };
 
+// Avatar color map based on first letter
+const avatarColors = {
+  A: { bg: "#fce7f3", color: "#db2777" },
+  B: { bg: "#fef3c7", color: "#d97706" },
+  C: { bg: "#ede9fe", color: "#7c3aed" },
+  D: { bg: "#dbeafe", color: "#2563eb" },
+  E: { bg: "#dcfce7", color: "#16a34a" },
+  F: { bg: "#fee2e2", color: "#dc2626" },
+  G: { bg: "#fef9c3", color: "#ca8a04" },
+  H: { bg: "#e0f2fe", color: "#0284c7" },
+  I: { bg: "#f0fdf4", color: "#15803d" },
+  J: { bg: "#fdf4ff", color: "#a21caf" },
+  K: { bg: "#fff7ed", color: "#c2410c" },
+  L: { bg: "#ede9fe", color: "#6d28d9" },
+  M: { bg: "#fce7f3", color: "#be185d" },
+  N: { bg: "#ecfdf5", color: "#059669" },
+  O: { bg: "#fef3c7", color: "#b45309" },
+  P: { bg: "#dcfce7", color: "#15803d" },
+  Q: { bg: "#dbeafe", color: "#1d4ed8" },
+  R: { bg: "#fef9c3", color: "#a16207" },
+  S: { bg: "#fce7f3", color: "#db2777" },
+  T: { bg: "#e0f2fe", color: "#0369a1" },
+  U: { bg: "#ede9fe", color: "#7c3aed" },
+  V: { bg: "#dcfce7", color: "#16a34a" },
+  W: { bg: "#fee2e2", color: "#b91c1c" },
+  X: { bg: "#fef3c7", color: "#92400e" },
+  Y: { bg: "#fdf4ff", color: "#86198f" },
+  Z: { bg: "#e0f2fe", color: "#075985" },
+};
+
+function getAvatarStyle(letter) {
+  const key = letter?.toUpperCase();
+  return avatarColors[key] || { bg: "#e2e8f0", color: "#475569" };
+}
+
 export default function ResourcesPage() {
   const [resources, setResources] = useState([]);
   const [message, setMessage] = useState("");
@@ -64,7 +99,6 @@ export default function ResourcesPage() {
     try {
       setSubmitting(true);
       await createResource(form);
-
       setMessage("Resource created successfully!");
       setMessageType("success");
       setForm(initialForm);
@@ -103,94 +137,128 @@ export default function ResourcesPage() {
   };
 
   const resourceTypes = useMemo(() => {
-    const types = resources
-      .map((resource) => resource.type)
-      .filter(Boolean);
-
+    const types = resources.map((r) => r.type).filter(Boolean);
     return ["ALL", ...new Set(types)];
   }, [resources]);
 
   const filteredResources = useMemo(() => {
     return resources.filter((resource) => {
-      const searchText = `${resource.name} ${resource.type} ${resource.location} ${resource.description}`
-        .toLowerCase();
-
+      const searchText =
+        `${resource.name} ${resource.type} ${resource.location} ${resource.description}`.toLowerCase();
       const matchesSearch = searchText.includes(searchTerm.toLowerCase());
-
       const matchesStatus =
-        statusFilter === "ALL" ||
-        resource.availabilityStatus === statusFilter;
-
-      const matchesType =
-        typeFilter === "ALL" || resource.type === typeFilter;
-
+        statusFilter === "ALL" || resource.availabilityStatus === statusFilter;
+      const matchesType = typeFilter === "ALL" || resource.type === typeFilter;
       return matchesSearch && matchesStatus && matchesType;
     });
   }, [resources, searchTerm, statusFilter, typeFilter]);
 
   const availableCount = resources.filter(
-    (resource) => resource.availabilityStatus === "AVAILABLE"
+    (r) => r.availabilityStatus === "AVAILABLE"
   ).length;
 
   const unavailableCount = resources.filter(
-    (resource) => resource.availabilityStatus === "UNAVAILABLE"
+    (r) => r.availabilityStatus === "UNAVAILABLE"
   ).length;
 
   return (
-    <div className="resources-page">
-      <div className="resources-container">
-        <div className="resources-header">
-          <div>
-            <p className="page-label">Smart Campus</p>
-            <h1>Resource Management</h1>
-            <p className="page-subtitle">
+    <div className="rp-page">
+      <div className="rp-container">
+
+        {/* Header */}
+        <div className="rp-header">
+          <div className="rp-header-left">
+            <div className="rp-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+              Smart Campus
+            </div>
+            <h1 className="rp-title">Resource Management</h1>
+            <p className="rp-subtitle">
               View, search, filter, and manage campus resources such as labs,
               rooms, projectors, and equipment.
             </p>
           </div>
-
-          <div className="role-badge">
+          <div className="rp-role-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
             {user?.role === "ADMIN" ? "Admin Panel" : "User View"}
           </div>
         </div>
 
-        <div className="stats-grid">
-          <div className="stat-card">
-            <span>Total Resources</span>
-            <h2>{resources.length}</h2>
+        {/* Stats */}
+        <div className="rp-stats">
+          <div className="rp-stat-card">
+            <div className="rp-stat-icon rp-stat-icon--blue">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <div className="rp-stat-info">
+              <span className="rp-stat-label">Total Resources</span>
+              <span className="rp-stat-value">{resources.length}</span>
+            </div>
           </div>
 
-          <div className="stat-card">
-            <span>Available</span>
-            <h2>{availableCount}</h2>
+          <div className="rp-stat-card">
+            <div className="rp-stat-icon rp-stat-icon--green">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+            </div>
+            <div className="rp-stat-info">
+              <span className="rp-stat-label">Available</span>
+              <span className="rp-stat-value">{availableCount}</span>
+            </div>
           </div>
 
-          <div className="stat-card">
-            <span>Unavailable</span>
-            <h2>{unavailableCount}</h2>
+          <div className="rp-stat-card">
+            <div className="rp-stat-icon rp-stat-icon--orange">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M15 9l-6 6M9 9l6 6"/>
+              </svg>
+            </div>
+            <div className="rp-stat-info">
+              <span className="rp-stat-label">Unavailable</span>
+              <span className="rp-stat-value">{unavailableCount}</span>
+            </div>
           </div>
         </div>
 
+        {/* Info / Message */}
         {user?.role !== "ADMIN" && (
-          <div className="info-box">
-            You can view and search resources. Adding and deleting resources are
-            handled by admin.
+          <div className="rp-info-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            You are currently in User View. You can search and filter resources.
+            Adding and deleting resources requires Admin privileges.
           </div>
         )}
 
         {message && (
-          <div className={`message-box ${messageType}`}>{message}</div>
+          <div className={`rp-message rp-message--${messageType}`}>{message}</div>
         )}
 
+        {/* Admin Form */}
         {user?.role === "ADMIN" && (
-          <div className="form-card">
-            <div className="card-heading">
+          <div className="rp-form-card">
+            <div className="rp-form-header">
               <h2>Add New Resource</h2>
               <p>Add campus resources with location and availability status.</p>
             </div>
-
-            <form onSubmit={handleCreate} className="resource-form">
-              <div className="form-grid">
+            <form onSubmit={handleCreate} className="rp-form">
+              <div className="rp-form-grid">
                 <input
                   name="name"
                   placeholder="Resource Name"
@@ -198,7 +266,6 @@ export default function ResourcesPage() {
                   onChange={handleChange}
                   required
                 />
-
                 <input
                   name="type"
                   placeholder="Type e.g. Room, Lab, Equipment"
@@ -206,7 +273,6 @@ export default function ResourcesPage() {
                   onChange={handleChange}
                   required
                 />
-
                 <input
                   name="location"
                   placeholder="Location"
@@ -214,7 +280,6 @@ export default function ResourcesPage() {
                   onChange={handleChange}
                   required
                 />
-
                 <select
                   name="availabilityStatus"
                   value={form.availabilityStatus}
@@ -224,7 +289,6 @@ export default function ResourcesPage() {
                   <option value="UNAVAILABLE">UNAVAILABLE</option>
                 </select>
               </div>
-
               <textarea
                 name="description"
                 placeholder="Description"
@@ -232,112 +296,136 @@ export default function ResourcesPage() {
                 onChange={handleChange}
                 rows="4"
               />
-
-              <button
-                type="submit"
-                className="primary-btn"
-                disabled={submitting}
-              >
+              <button type="submit" className="rp-btn-primary" disabled={submitting}>
                 {submitting ? "Adding..." : "+ Add Resource"}
               </button>
             </form>
           </div>
         )}
 
-        <div className="resource-toolbar">
-          <div>
-            <h2>Available Resources</h2>
-            <p>
-              Showing {filteredResources.length} of {resources.length} resources
-            </p>
+        {/* Toolbar */}
+        <div className="rp-toolbar">
+          <h2 className="rp-toolbar-title">Available Resources</h2>
+          <span className="rp-toolbar-count">
+            Showing {filteredResources.length} of {resources.length}
+          </span>
+        </div>
+
+        {/* Filters */}
+        <div className="rp-filter-bar">
+          <div className="rp-search-wrap">
+            <svg className="rp-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="Search resources by name, location, or description..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="rp-search-input"
+            />
           </div>
 
-          <button className="refresh-btn" onClick={loadResources}>
-            Refresh
-          </button>
+          <div className="rp-select-wrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rp-filter-select"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="AVAILABLE">Available</option>
+              <option value="UNAVAILABLE">Unavailable</option>
+            </select>
+          </div>
+
+          <div className="rp-select-wrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="rp-filter-select"
+            >
+              {resourceTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type === "ALL" ? "All Types" : type}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div className="filter-card">
-          <input
-            type="text"
-            placeholder="Search by name, type, location, or description..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="ALL">All Status</option>
-            <option value="AVAILABLE">Available</option>
-            <option value="UNAVAILABLE">Unavailable</option>
-          </select>
-
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="filter-select"
-          >
-            {resourceTypes.map((type) => (
-              <option key={type} value={type}>
-                {type === "ALL" ? "All Types" : type}
-              </option>
-            ))}
-          </select>
-        </div>
-
+        {/* Resource Grid */}
         {loading ? (
-          <p className="empty-text">Loading resources...</p>
+          <p className="rp-empty">Loading resources...</p>
         ) : filteredResources.length === 0 ? (
-          <p className="empty-text">No matching resources found.</p>
+          <p className="rp-empty">No matching resources found.</p>
         ) : (
-          <div className="resources-grid">
-            {filteredResources.map((resource) => (
-              <div className="resource-card" key={resource.id}>
-                <div className="card-top">
-                  <div className="resource-icon">
-                    {resource.type?.charAt(0)?.toUpperCase() || "R"}
+          <div className="rp-grid">
+            {filteredResources.map((resource) => {
+              const letter = resource.name?.charAt(0)?.toUpperCase() || "R";
+              const avatarStyle = getAvatarStyle(letter);
+              return (
+                <div className="rp-card" key={resource.id}>
+                  <div className="rp-card-top">
+                    <div
+                      className="rp-avatar"
+                      style={{ background: avatarStyle.bg, color: avatarStyle.color }}
+                    >
+                      {letter}
+                    </div>
+                    <span
+                      className={`rp-status ${
+                        resource.availabilityStatus === "AVAILABLE"
+                          ? "rp-status--available"
+                          : "rp-status--unavailable"
+                      }`}
+                    >
+                      {resource.availabilityStatus}
+                    </span>
                   </div>
 
-                  <span
-                    className={
-                      resource.availabilityStatus === "AVAILABLE"
-                        ? "status available"
-                        : "status unavailable"
-                    }
-                  >
-                    {resource.availabilityStatus}
-                  </span>
+                  <h3 className="rp-card-name">{resource.name}</h3>
+
+                  <div className="rp-card-meta">
+                    <span className="rp-meta-item">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                      </svg>
+                      {resource.type}
+                    </span>
+                    <span className="rp-meta-dot">·</span>
+                    <span className="rp-meta-item">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                      </svg>
+                      {resource.location}
+                    </span>
+                  </div>
+
+                  {resource.description && (
+                    <p className="rp-card-desc">{resource.description}</p>
+                  )}
+
+                  {user?.role === "ADMIN" && (
+                    <button
+                      className="rp-btn-delete"
+                      onClick={() => handleDelete(resource.id)}
+                    >
+                      Delete Resource
+                    </button>
+                  )}
                 </div>
-
-                <h3>{resource.name}</h3>
-
-                <div className="resource-details">
-                  <p>
-                    <strong>Type:</strong> {resource.type}
-                  </p>
-                  <p>
-                    <strong>Location:</strong> {resource.location}
-                  </p>
-                  <p>
-                    <strong>Description:</strong>{" "}
-                    {resource.description || "No description added"}
-                  </p>
-                </div>
-
-                {user?.role === "ADMIN" && (
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(resource.id)}
-                  >
-                    Delete Resource
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
