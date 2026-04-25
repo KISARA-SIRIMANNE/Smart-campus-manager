@@ -10,6 +10,7 @@ import UserDashboard from "./pages/UserDashboard";
 import ResourcesPage from "./pages/ResourcesPage";
 import BookingsPage from "./pages/BookingsPage";
 import TicketsPage from "./pages/TicketsPage";
+import UserManagementPage from "./pages/UserManagementPage";
 
 function AppRoutes() {
   const location = useLocation();
@@ -66,6 +67,15 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <TicketsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <UserManagementPage />
             </ProtectedRoute>
           }
         />

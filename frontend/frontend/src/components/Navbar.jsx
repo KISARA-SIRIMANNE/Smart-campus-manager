@@ -1,15 +1,36 @@
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+  const location = useLocation();
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
+
+  useEffect(() => {
+    // Listen for storage changes from other tabs/windows
+    const handleStorageChange = () => {
+      setUser(JSON.parse(localStorage.getItem("user")));
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  // Update user from localStorage when navigating between pages
+  useEffect(() => {
+    setUser(JSON.parse(localStorage.getItem("user")));
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/login");
   };
 
+  const isActive = (path) => {
+    return location.pathname === path ? "nav-link active" : "nav-link";
+  };
   const getNavClass = ({ isActive }) =>
     isActive ? "nav-link active" : "nav-link";
 
@@ -50,6 +71,17 @@ export default function Navbar() {
 
       {/* Nav Links */}
       <div className="navbar-links">
+        <Link to="/" className={isActive("/")}>Home</Link>
+
+        {user && user.role === "ADMIN" && (
+          <>
+            <Link to="/admin-dashboard" className={isActive("/admin-dashboard")}>
+              Dashboard
+            </Link>
+            <Link to="/users" className={isActive("/users")}>
+              Users
+            </Link>
+          </>
         <NavLink to="/" end className={getNavClass}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
@@ -70,6 +102,10 @@ export default function Navbar() {
 
         {user && (
           <>
+            <Link to="/resources" className={isActive("/resources")}>Resources</Link>
+            <Link to="/bookings" className={isActive("/bookings")}>Bookings</Link>
+            <Link to="/tickets" className={isActive("/tickets")}>Tickets</Link>
+            <Link to="/user-dashboard" className={isActive("/user-dashboard")}>My Profile</Link>
             <NavLink to="/resources" className={getNavClass}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
@@ -94,6 +130,8 @@ export default function Navbar() {
 
         {!user && (
           <>
+            <Link to="/login" className={isActive("/login")}>Login</Link>
+            <Link to="/register" className={isActive("/register")}>Register</Link>
             <NavLink to="/login" className={getNavClass}>Login</NavLink>
             <NavLink to="/register" className={getNavClass}>Register</NavLink>
           </>
@@ -117,7 +155,15 @@ export default function Navbar() {
             {/* User pill */}
             <div className="user-pill">
               <span className="user-avatar">
-                {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                {user?.profilePicture ? (
+                  <img 
+                    src={user.profilePicture} 
+                    alt="Profile" 
+                    className="avatar-image"
+                  />
+                ) : (
+                  user?.name?.charAt(0)?.toUpperCase() || "U"
+                )}
               </span>
               <span className="user-info">
                 <span className="user-welcome">Welcome back,</span>

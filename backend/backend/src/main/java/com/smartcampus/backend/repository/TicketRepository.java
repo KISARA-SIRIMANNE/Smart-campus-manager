@@ -10,8 +10,8 @@ public interface TicketRepository extends MongoRepository<Ticket, String> {
     // 🔍 Filter by status (OPEN, RESOLVED, etc.)
     List<Ticket> findByStatus(String status);
 
-    // 🔍 Filter by category
-    List<Ticket> findByCategory(String category);
+    // 🔍 Filter by incident type
+    List<Ticket> findByIncidentType(String incidentType);
 
     // 🔍 Filter by priority
     List<Ticket> findByPriority(String priority);
