@@ -1,11 +1,15 @@
 import { useEffect, useState, useRef } from "react";
 import {
   approveBooking,
+  cancelBooking,
   createBooking,
+  deleteBooking,
   getBookings,
   rejectBooking,
+  updateBooking,
 } from "../api/bookingApi";
 import { getResources } from "../api/resourceApi";
+import RejectionModal from "../components/RejectionModal";
 import "./BookingsPage.css";
 
 export default function BookingsPage() {
@@ -13,12 +17,16 @@ export default function BookingsPage() {
   const [resources, setResources] = useState([]);
   const [filteredResources, setFilteredResources] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [bookingSearchTerm, setBookingSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [rejectingBookingId, setRejectingBookingId] = useState(null);
   const user = JSON.parse(localStorage.getItem("user"));
   const resourceSearchRef = useRef(null);
-  const [attendeeInput, setAttendeeInput] = useState("");
 
   const [form, setForm] = useState({
     userId: user?.userId || "",
@@ -27,7 +35,6 @@ export default function BookingsPage() {
     startTime: "",
     endTime: "",
     purpose: "",
-    attendees: [],
   });
 
   const loadBookings = async () => {
@@ -49,6 +56,11 @@ export default function BookingsPage() {
     }
   };
 
+  const getResourceName = (resourceId) => {
+    const resource = resources.find((r) => r.id === resourceId);
+    return resource?.name || "Unknown Resource";
+  };
+
   useEffect(() => {
     loadBookings();
     loadResources();
@@ -67,7 +79,15 @@ export default function BookingsPage() {
   }, []);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    const updatedForm = { ...form, [name]: value };
+
+    // If start time changes and it's after end time, clear end time
+    if (name === "startTime" && updatedForm.endTime && value > updatedForm.endTime) {
+      updatedForm.endTime = "";
+    }
+
+    setForm(updatedForm);
   };
 
   const handleResourceSearch = (value) => {
@@ -93,50 +113,12 @@ export default function BookingsPage() {
     setShowDropdown(false);
   };
 
-  const handleAddAttendee = () => {
-    const email = attendeeInput.trim();
-    if (!email) return;
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      alert("Please enter a valid email address");
-      return;
-    }
-
-    // Check if attendee already added
-    if (form.attendees.includes(email)) {
-      alert("This attendee is already added");
-      return;
-    }
-
-    setForm({
-      ...form,
-      attendees: [...form.attendees, email],
-    });
-    setAttendeeInput("");
-  };
-
-  const handleRemoveAttendee = (index) => {
-    setForm({
-      ...form,
-      attendees: form.attendees.filter((_, i) => i !== index),
-    });
-  };
-
-  const handleAttendeeKeyPress = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddAttendee();
-    }
-  };
-
   const handleCreate = async (e) => {
     e.preventDefault();
     setMessage("");
 
     try {
-      await createBooking(form);
+      const response = await createBooking(form);
       setMessage("✓ Booking created successfully!");
       setMessageType("success");
       setForm({
@@ -146,15 +128,13 @@ export default function BookingsPage() {
         startTime: "",
         endTime: "",
         purpose: "",
-        attendees: [],
       });
       setSearchTerm("");
-      setAttendeeInput("");
       loadBookings();
       setTimeout(() => setMessage(""), 4000);
     } catch (err) {
       console.error(err);
-      const errorMsg = err.response?.data?.error || "Booking creation failed";
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || "Booking creation failed";
       setMessage("✗ " + errorMsg);
       setMessageType("error");
     }
@@ -169,12 +149,123 @@ export default function BookingsPage() {
     }
   };
 
+  const getFilteredBookings = () => {
+    if (!bookingSearchTerm.trim()) {
+      return bookings;
+    }
+
+    const searchLower = bookingSearchTerm.toLowerCase();
+    return bookings.filter((booking) => {
+      const resourceName = getResourceName(booking.resourceId).toLowerCase();
+      const purpose = booking.purpose?.toLowerCase() || "";
+      const date = booking.date?.toLowerCase() || "";
+      const status = booking.status?.toLowerCase() || "";
+
+      return (
+        resourceName.includes(searchLower) ||
+        purpose.includes(searchLower) ||
+        date.includes(searchLower) ||
+        status.includes(searchLower)
+      );
+    });
+  };
+
   const handleReject = async (id) => {
+    setRejectingBookingId(id);
+    setShowRejectionModal(true);
+  };
+
+  const handleRejectConfirm = async (reason) => {
     try {
-      await rejectBooking(id);
+      setMessage("");
+      await rejectBooking(rejectingBookingId, reason);
+      setMessage("✓ Booking rejected successfully!");
+      setMessageType("success");
+      setShowRejectionModal(false);
+      setRejectingBookingId(null);
       loadBookings();
+      setTimeout(() => setMessage(""), 4000);
     } catch (err) {
       console.error(err);
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || "Booking rejection failed";
+      setMessage("✗ " + errorMsg);
+      setMessageType("error");
+      setShowRejectionModal(false);
+      setRejectingBookingId(null);
+    }
+  };
+
+  const handleRejectCancel = () => {
+    setShowRejectionModal(false);
+    setRejectingBookingId(null);
+  };
+
+  const handleEdit = (booking) => {
+    setEditingId(booking.id);
+    setEditForm({
+      date: booking.date,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+      purpose: booking.purpose,
+      resourceId: booking.resourceId,
+    });
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm({ ...editForm, [name]: value });
+  };
+
+  const handleSaveEdit = async (id) => {
+    try {
+      setMessage("");
+      await updateBooking(id, editForm);
+      setMessage("✓ Booking updated successfully!");
+      setMessageType("success");
+      setEditingId(null);
+      loadBookings();
+      setTimeout(() => setMessage(""), 4000);
+    } catch (err) {
+      console.error(err);
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || "Booking update failed";
+      setMessage("✗ " + errorMsg);
+      setMessageType("error");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this booking?")) {
+      try {
+        setMessage("");
+        await deleteBooking(id);
+        setMessage("✓ Booking deleted successfully!");
+        setMessageType("success");
+        loadBookings();
+        setTimeout(() => setMessage(""), 4000);
+      } catch (err) {
+        console.error(err);
+        const errorMsg = err.response?.data?.error || err.response?.data?.message || "Booking deletion failed";
+        setMessage("✗ " + errorMsg);
+        setMessageType("error");
+      }
+    }
+  };
+
+  const handleCancel = async (id) => {
+    if (window.confirm("Are you sure you want to cancel this approved booking?")) {
+      try {
+        setMessage("");
+        await cancelBooking(id);
+        setMessage("✓ Booking cancelled successfully!");
+        setMessageType("success");
+        loadBookings();
+        setTimeout(() => setMessage(""), 4000);
+      } catch (err) {
+        console.error(err);
+        const errorMsg = err.response?.data?.error || err.response?.data?.message || "Booking cancellation failed";
+        setMessage("✗ " + errorMsg);
+        setMessageType("error");
+      }
     }
   };
 
@@ -284,7 +375,10 @@ export default function BookingsPage() {
                   type="time"
                   value={form.endTime}
                   onChange={handleChange}
+                  min={form.startTime}
+                  disabled={!form.startTime}
                   required
+                  title={!form.startTime ? "Please select start time first" : ""}
                 />
               </div>
 
@@ -300,48 +394,6 @@ export default function BookingsPage() {
                 />
               </div>
 
-              <div className="form-group">
-                <label htmlFor="attendeeInput">Add Attendees</label>
-                <div className="attendee-input-container">
-                  <div className="attendee-input-row">
-                    <input
-                      id="attendeeInput"
-                      type="email"
-                      placeholder="Enter attendee email..."
-                      value={attendeeInput}
-                      onChange={(e) => setAttendeeInput(e.target.value)}
-                      onKeyPress={handleAttendeeKeyPress}
-                    />
-                    <button
-                      type="button"
-                      className="btn-add-attendee"
-                      onClick={handleAddAttendee}
-                      title="Add attendee"
-                    >
-                      + Add
-                    </button>
-                  </div>
-
-                  {form.attendees.length > 0 && (
-                    <div className="attendees-list">
-                      {form.attendees.map((attendee, index) => (
-                        <div key={index} className="attendee-tag">
-                          <span className="attendee-email">{attendee}</span>
-                          <button
-                            type="button"
-                            className="attendee-remove"
-                            onClick={() => handleRemoveAttendee(index)}
-                            title="Remove attendee"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
               <div className="form-actions">
                 <button type="submit" className="btn-primary">
                   Create Booking
@@ -354,88 +406,219 @@ export default function BookingsPage() {
         {/* Bookings List */}
         <div className="bookings-list-header">
           <h2>Your Bookings</h2>
-          <div className="bookings-count">{bookings.length} booking{bookings.length !== 1 ? "s" : ""}</div>
+          <div className="bookings-count">{getFilteredBookings().length} booking{getFilteredBookings().length !== 1 ? "s" : ""}</div>
         </div>
 
-        {bookings.length === 0 ? (
+        {/* Search Filter for Bookings */}
+        <div className="booking-search-card">
+          <input
+            type="text"
+            placeholder="Search bookings by resource, purpose, or date..."
+            value={bookingSearchTerm}
+            onChange={(e) => setBookingSearchTerm(e.target.value)}
+            className="booking-search-input"
+          />
+        </div>
+
+        {getFilteredBookings().length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">📭</div>
-            <p>No bookings yet. Create one to get started!</p>
+            <p>{bookingSearchTerm ? "No bookings match your search." : "No bookings yet. Create one to get started!"}</p>
           </div>
         ) : (
           <div className="bookings-grid">
-            {bookings.map((booking) => (
+            {getFilteredBookings().map((booking) => (
               <div key={booking.id} className="booking-card">
-                <div className="booking-header">
-                  <div className="booking-id">Booking #{booking.id}</div>
-                  <span className={`booking-status-badge ${getStatusBadgeClass(booking.status)}`}>
-                    {booking.status}
-                  </span>
-                </div>
-
-                <div className="booking-content">
-                  <div className="booking-field">
-                    <div className="booking-field-label">Resource</div>
-                    <div className="booking-field-value highlight">
-                      Resource ID: {booking.resourceId}
+                {editingId === booking.id ? (
+                  // Edit Mode
+                  <div className="booking-edit-form">
+                    <h3>Edit Booking</h3>
+                    <div className="edit-form-group">
+                      <label>Resource</label>
+                      <select
+                        name="resourceId"
+                        value={editForm.resourceId}
+                        onChange={handleEditChange}
+                      >
+                        <option value="">Select Resource</option>
+                        {resources.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="edit-form-group">
+                      <label>Date</label>
+                      <input
+                        type="date"
+                        name="date"
+                        value={editForm.date}
+                        onChange={handleEditChange}
+                      />
+                    </div>
+                    <div className="edit-form-group">
+                      <label>Start Time</label>
+                      <input
+                        type="time"
+                        name="startTime"
+                        value={editForm.startTime}
+                        onChange={handleEditChange}
+                      />
+                    </div>
+                    <div className="edit-form-group">
+                      <label>End Time</label>
+                      <input
+                        type="time"
+                        name="endTime"
+                        value={editForm.endTime}
+                        onChange={handleEditChange}
+                      />
+                    </div>
+                    <div className="edit-form-group">
+                      <label>Purpose</label>
+                      <input
+                        type="text"
+                        name="purpose"
+                        value={editForm.purpose}
+                        onChange={handleEditChange}
+                      />
+                    </div>
+                    <div className="edit-form-actions">
+                      <button
+                        className="btn-action save"
+                        onClick={() => handleSaveEdit(booking.id)}
+                      >
+                        💾 Save
+                      </button>
+                      <button
+                        className="btn-action cancel"
+                        onClick={() => setEditingId(null)}
+                      >
+                        ✕ Cancel
+                      </button>
                     </div>
                   </div>
-
-                  <div className="booking-datetime">
-                    <div className="booking-datetime-item">
-                      <span className="booking-datetime-label">📅 Date</span>
-                      <span className="booking-datetime-value">{booking.date}</span>
-                    </div>
-                    <div className="booking-datetime-item">
-                      <span className="booking-datetime-label">⏱️ Time</span>
-                      <span className="booking-datetime-value">
-                        {booking.startTime} - {booking.endTime}
+                ) : (
+                  // View Mode
+                  <>
+                    <div className="booking-header">
+                      <div className="booking-id">Booking #{booking.id}</div>
+                      <span className={`booking-status-badge ${getStatusBadgeClass(booking.status)}`}>
+                        {booking.status}
                       </span>
                     </div>
-                  </div>
 
-                  <div className="booking-field">
-                    <div className="booking-field-label">Purpose</div>
-                    <div className="booking-field-value">{booking.purpose}</div>
-                  </div>
-
-                  {booking.attendees && booking.attendees.length > 0 && (
-                    <div className="booking-field">
-                      <div className="booking-field-label">👥 Attendees ({booking.attendees.length})</div>
-                      <div className="booking-attendees-list">
-                        {booking.attendees.map((attendee, idx) => (
-                          <div key={idx} className="booking-attendee-item">
-                            {attendee}
-                          </div>
-                        ))}
+                    <div className="booking-content">
+                      <div className="booking-field">
+                        <div className="booking-field-label">Resource</div>
+                        <div className="booking-field-value highlight">
+                          {getResourceName(booking.resourceId)}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
 
-                {user?.role === "ADMIN" && booking.status === "PENDING" && (
-                  <div className="booking-actions">
-                    <button
-                      className="btn-action approve"
-                      onClick={() => handleApprove(booking.id)}
-                      title="Approve booking"
-                    >
-                      ✓ Approve
-                    </button>
-                    <button
-                      className="btn-action reject"
-                      onClick={() => handleReject(booking.id)}
-                      title="Reject booking"
-                    >
-                      ✗ Reject
-                    </button>
-                  </div>
+                      <div className="booking-datetime">
+                        <div className="booking-datetime-item">
+                          <span className="booking-datetime-label">📅 Date</span>
+                          <span className="booking-datetime-value">{booking.date}</span>
+                        </div>
+                        <div className="booking-datetime-item">
+                          <span className="booking-datetime-label">⏱️ Time</span>
+                          <span className="booking-datetime-value">
+                            {booking.startTime} - {booking.endTime}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="booking-field">
+                        <div className="booking-field-label">Purpose</div>
+                        <div className="booking-field-value">{booking.purpose}</div>
+                      </div>
+
+                      {booking.rejectionReason && booking.status === "REJECTED" && (
+                        <div className="booking-field rejection-reason">
+                          <div className="booking-field-label">⛔ Rejection Reason</div>
+                          <div className="booking-field-value">{booking.rejectionReason}</div>
+                        </div>
+                      )}
+
+                      {booking.attendees && booking.attendees.length > 0 && (
+                        <div className="booking-field">
+                          <div className="booking-field-label">👥 Attendees ({booking.attendees.length})</div>
+                          <div className="booking-attendees-list">
+                            {booking.attendees.map((attendee, idx) => (
+                              <div key={idx} className="booking-attendee-item">
+                                {attendee}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {user?.role === "ADMIN" && booking.status === "PENDING" && (
+                      <div className="booking-actions">
+                        <button
+                          className="btn-action approve"
+                          onClick={() => handleApprove(booking.id)}
+                          title="Approve booking"
+                        >
+                          ✓ Approve
+                        </button>
+                        <button
+                          className="btn-action reject"
+                          onClick={() => handleReject(booking.id)}
+                          title="Reject booking"
+                        >
+                          ✗ Reject
+                        </button>
+                      </div>
+                    )}
+
+                    {user?.userId === booking.userId && booking.status === "PENDING" && (
+                      <div className="booking-user-actions">
+                        <button
+                          className="btn-action edit"
+                          onClick={() => handleEdit(booking)}
+                          title="Edit booking"
+                        >
+                          ✎ Edit
+                        </button>
+                        <button
+                          className="btn-action delete"
+                          onClick={() => handleDelete(booking.id)}
+                          title="Delete booking"
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    )}
+
+                    {user?.userId === booking.userId && booking.status === "APPROVED" && (
+                      <div className="booking-user-actions">
+                        <button
+                          className="btn-action cancel-booking"
+                          onClick={() => handleCancel(booking.id)}
+                          title="Cancel approved booking"
+                        >
+                          ⊗ Cancel Booking
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ))}
           </div>
         )}
       </div>
+
+      <RejectionModal
+        isOpen={showRejectionModal}
+        itemType="Booking"
+        onConfirm={handleRejectConfirm}
+        onCancel={handleRejectCancel}
+      />
     </div>
   );
 }

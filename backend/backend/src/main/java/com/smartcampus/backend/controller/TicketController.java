@@ -42,10 +42,10 @@ public class TicketController {
         return ticketService.getTicketsByStatus(status);
     }
 
-    // FILTER BY CATEGORY
-    @GetMapping("/filter/category")
-    public List<Ticket> getByCategory(@RequestParam String category) {
-        return ticketService.getTicketsByCategory(category);
+    // FILTER BY INCIDENT TYPE
+    @GetMapping("/filter/incidentType")
+    public List<Ticket> getByIncidentType(@RequestParam String incidentType) {
+        return ticketService.getTicketsByIncidentType(incidentType);
     }
 
     // FILTER BY PRIORITY
@@ -65,6 +65,13 @@ public class TicketController {
     public Ticket updateStatus(@PathVariable String id,
                                @RequestParam String status) {
         return ticketService.updateTicketStatus(id, status);
+    }
+
+    // REJECT TICKET
+    @PutMapping("/{id}/reject")
+    public Ticket rejectTicket(@PathVariable String id,
+                               @RequestParam String reason) {
+        return ticketService.rejectTicket(id, reason);
     }
 
     // ASSIGN TECHNICIAN + ADD RESOLUTION

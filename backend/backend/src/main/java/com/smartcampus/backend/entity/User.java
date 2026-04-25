@@ -29,4 +29,6 @@ public class User {
 
     @NotBlank(message = "Role is required")
     private String role; // USER or ADMIN
+
+    private String profilePicture; // Base64 encoded image
 }

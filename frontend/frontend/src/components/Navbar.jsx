@@ -1,13 +1,34 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import "./Navbar.css";
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+  const location = useLocation();
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
+
+  useEffect(() => {
+    // Listen for storage changes from other tabs/windows
+    const handleStorageChange = () => {
+      setUser(JSON.parse(localStorage.getItem("user")));
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  // Update user from localStorage when navigating between pages
+  useEffect(() => {
+    setUser(JSON.parse(localStorage.getItem("user")));
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/login");
+  };
+
+  const isActive = (path) => {
+    return location.pathname === path ? "nav-link active" : "nav-link";
   };
 
   return (
@@ -21,39 +42,50 @@ export default function Navbar() {
       </Link>
 
       <div className="navbar-links">
-        <Link to="/" className="nav-link active">Home</Link>
+        <Link to="/" className={isActive("/")}>Home</Link>
 
         {user && user.role === "ADMIN" && (
-          <Link to="/admin-dashboard" className="nav-link">
-            Dashboard
-          </Link>
+          <>
+            <Link to="/admin-dashboard" className={isActive("/admin-dashboard")}>
+              Dashboard
+            </Link>
+            <Link to="/users" className={isActive("/users")}>
+              Users
+            </Link>
+          </>
         )}
 
         {user && (
           <>
-            <Link to="/resources" className="nav-link">Resources</Link>
-            <Link to="/bookings" className="nav-link">Bookings</Link>
-            <Link to="/tickets" className="nav-link">Tickets</Link>
-            <Link to="/user-dashboard" className="nav-link">My Page</Link>
+            <Link to="/resources" className={isActive("/resources")}>Resources</Link>
+            <Link to="/bookings" className={isActive("/bookings")}>Bookings</Link>
+            <Link to="/tickets" className={isActive("/tickets")}>Tickets</Link>
+            <Link to="/user-dashboard" className={isActive("/user-dashboard")}>My Profile</Link>
           </>
         )}
 
         {!user && (
           <>
-            <Link to="/login" className="nav-link">Login</Link>
-            <Link to="/register" className="nav-link">Register</Link>
+            <Link to="/login" className={isActive("/login")}>Login</Link>
+            <Link to="/register" className={isActive("/register")}>Register</Link>
           </>
         )}
       </div>
 
       <div className="navbar-actions">
-        <button className="circle-btn">⌕</button>
-
         {user ? (
           <>
             <div className="user-pill">
               <span className="user-avatar">
-                {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                {user?.profilePicture ? (
+                  <img 
+                    src={user.profilePicture} 
+                    alt="Profile" 
+                    className="avatar-image"
+                  />
+                ) : (
+                  user?.name?.charAt(0)?.toUpperCase() || "U"
+                )}
               </span>
               <span>
                 Welcome, {user.name}

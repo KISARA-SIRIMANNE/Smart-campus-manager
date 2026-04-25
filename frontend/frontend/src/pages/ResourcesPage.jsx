@@ -2,13 +2,28 @@ import { useEffect, useMemo, useState } from "react";
 import {
   createResource,
   deleteResource,
+  updateResource,
   getResources,
 } from "../api/resourceApi";
 import "./ResourcesPage.css";
 
+const RESOURCE_CATEGORIES = [
+  "Lecture Hall",
+  "Laboratory",
+  "Meeting Room",
+  "Library",
+  "Study Space",
+  "Sports Facility",
+  "Equipment",
+  "Other"
+];
+
+const CAPACITY_CATEGORIES = ["Lecture Hall", "Laboratory", "Meeting Room", "Study Space"];
+
 const initialForm = {
   name: "",
-  type: "",
+  category: "",
+  capacity: "",
   location: "",
   description: "",
   availabilityStatus: "AVAILABLE",
@@ -23,7 +38,10 @@ export default function ResourcesPage() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [typeFilter, setTypeFilter] = useState("ALL");
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
+
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -102,17 +120,56 @@ export default function ResourcesPage() {
     }
   };
 
-  const resourceTypes = useMemo(() => {
-    const types = resources
-      .map((resource) => resource.type)
-      .filter(Boolean);
+  const handleEditStart = (resource) => {
+    setEditingId(resource.id);
+    setEditForm(resource);
+  };
 
-    return ["ALL", ...new Set(types)];
-  }, [resources]);
+  const handleEditChange = (e) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  };
+
+  const handleEditSave = async (id) => {
+    if (user?.role !== "ADMIN") {
+      setMessage("Only admin can update resources");
+      setMessageType("error");
+      return;
+    }
+
+    if (!editForm.category) {
+      setMessage("Category is required");
+      setMessageType("error");
+      return;
+    }
+
+    if (!editForm.location) {
+      setMessage("Location is required");
+      setMessageType("error");
+      return;
+    }
+
+    try {
+      await updateResource(id, editForm);
+      setMessage("Resource updated successfully!");
+      setMessageType("success");
+      setEditingId(null);
+      setEditForm({});
+      loadResources();
+    } catch (err) {
+      console.error("Update resource error:", err);
+      setMessage("Failed to update resource");
+      setMessageType("error");
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditingId(null);
+    setEditForm({});
+  };
 
   const filteredResources = useMemo(() => {
     return resources.filter((resource) => {
-      const searchText = `${resource.name} ${resource.type} ${resource.location} ${resource.description}`
+      const searchText = `${resource.name} ${resource.capacity || ""} ${resource.category} ${resource.location} ${resource.description}`
         .toLowerCase();
 
       const matchesSearch = searchText.includes(searchTerm.toLowerCase());
@@ -121,12 +178,12 @@ export default function ResourcesPage() {
         statusFilter === "ALL" ||
         resource.availabilityStatus === statusFilter;
 
-      const matchesType =
-        typeFilter === "ALL" || resource.type === typeFilter;
+      const matchesCategory =
+        categoryFilter === "ALL" || resource.category === categoryFilter;
 
-      return matchesSearch && matchesStatus && matchesType;
+      return matchesSearch && matchesStatus && matchesCategory;
     });
-  }, [resources, searchTerm, statusFilter, typeFilter]);
+  }, [resources, searchTerm, statusFilter, categoryFilter]);
 
   const availableCount = resources.filter(
     (resource) => resource.availabilityStatus === "AVAILABLE"
@@ -199,13 +256,30 @@ export default function ResourcesPage() {
                   required
                 />
 
-                <input
-                  name="type"
-                  placeholder="Type e.g. Room, Lab, Equipment"
-                  value={form.type}
+                <select
+                  name="category"
+                  value={form.category}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="">Select Category</option>
+                  {RESOURCE_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+
+                {CAPACITY_CATEGORIES.includes(form.category) && (
+                  <input
+                    name="capacity"
+                    placeholder="Capacity (e.g., 50, 100)"
+                    type="number"
+                    value={form.capacity}
+                    onChange={handleChange}
+                    required
+                  />
+                )}
 
                 <input
                   name="location"
@@ -277,13 +351,14 @@ export default function ResourcesPage() {
           </select>
 
           <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
             className="filter-select"
           >
-            {resourceTypes.map((type) => (
-              <option key={type} value={type}>
-                {type === "ALL" ? "All Types" : type}
+            <option value="ALL">All Types</option>
+            {RESOURCE_CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
               </option>
             ))}
           </select>
@@ -297,44 +372,142 @@ export default function ResourcesPage() {
           <div className="resources-grid">
             {filteredResources.map((resource) => (
               <div className="resource-card" key={resource.id}>
-                <div className="card-top">
-                  <div className="resource-icon">
-                    {resource.type?.charAt(0)?.toUpperCase() || "R"}
+                {editingId === resource.id ? (
+                  // Edit Mode
+                  <div className="edit-mode">
+                    <div className="edit-form-compact">
+                      <input
+                        name="name"
+                        placeholder="Resource Name"
+                        value={editForm.name || ""}
+                        onChange={handleEditChange}
+                        className="edit-input"
+                      />
+
+                      <select
+                        name="category"
+                        value={editForm.category || ""}
+                        onChange={handleEditChange}
+                        className="edit-select"
+                      >
+                        <option value="">Select Category</option>
+                        {RESOURCE_CATEGORIES.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+
+                      {CAPACITY_CATEGORIES.includes(editForm.category) && (
+                        <input
+                          name="capacity"
+                          placeholder="Capacity"
+                          type="number"
+                          value={editForm.capacity || ""}
+                          onChange={handleEditChange}
+                          className="edit-input"
+                        />
+                      )}
+
+                      <input
+                        name="location"
+                        placeholder="Location"
+                        value={editForm.location || ""}
+                        onChange={handleEditChange}
+                        className="edit-input"
+                      />
+
+                      <select
+                        name="availabilityStatus"
+                        value={editForm.availabilityStatus || "AVAILABLE"}
+                        onChange={handleEditChange}
+                        className="edit-select"
+                      >
+                        <option value="AVAILABLE">AVAILABLE</option>
+                        <option value="UNAVAILABLE">UNAVAILABLE</option>
+                      </select>
+
+                      <textarea
+                        name="description"
+                        placeholder="Description"
+                        value={editForm.description || ""}
+                        onChange={handleEditChange}
+                        className="edit-textarea"
+                        rows="2"
+                      />
+
+                      <div className="edit-buttons">
+                        <button
+                          className="save-btn"
+                          onClick={() => handleEditSave(resource.id)}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="cancel-btn"
+                          onClick={handleEditCancel}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
                   </div>
+                ) : (
+                  // View Mode
+                  <>
+                    <div className="card-top">
+                      <div className="resource-icon">
+                        {resource.name?.charAt(0)?.toUpperCase() || "R"}
+                      </div>
 
-                  <span
-                    className={
-                      resource.availabilityStatus === "AVAILABLE"
-                        ? "status available"
-                        : "status unavailable"
-                    }
-                  >
-                    {resource.availabilityStatus}
-                  </span>
-                </div>
+                      <span
+                        className={
+                          resource.availabilityStatus === "AVAILABLE"
+                            ? "status available"
+                            : "status unavailable"
+                        }
+                      >
+                        {resource.availabilityStatus}
+                      </span>
+                    </div>
 
-                <h3>{resource.name}</h3>
+                    <h3>{resource.name}</h3>
 
-                <div className="resource-details">
-                  <p>
-                    <strong>Type:</strong> {resource.type}
-                  </p>
-                  <p>
-                    <strong>Location:</strong> {resource.location}
-                  </p>
-                  <p>
-                    <strong>Description:</strong>{" "}
-                    {resource.description || "No description added"}
-                  </p>
-                </div>
+                    <div className="resource-details">
+                      <p>
+                        <strong>Category:</strong> {resource.category || "Not specified"}
+                      </p>
+                      {resource.capacity && (
+                        <p>
+                          <strong>Capacity:</strong> {resource.capacity}
+                        </p>
+                      )}
+                      <p>
+                        <strong>Location:</strong> {resource.location}
+                      </p>
+                      <p>
+                        <strong>Description:</strong>{" "}
+                        {resource.description || "No description added"}
+                      </p>
+                    </div>
 
-                {user?.role === "ADMIN" && (
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(resource.id)}
-                  >
-                    Delete Resource
-                  </button>
+                    {user?.role === "ADMIN" && (
+                      <div className="admin-buttons">
+                        <button
+                          className="edit-btn"
+                          onClick={() => handleEditStart(resource)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDelete(resource.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ))}
