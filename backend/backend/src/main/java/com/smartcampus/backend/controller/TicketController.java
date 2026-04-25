@@ -1,10 +1,5 @@
 package com.smartcampus.backend.controller;
 
-public class TicketController {
-    
-}
-package com.smartcampus.backend.controller;
-
 import com.smartcampus.backend.entity.Ticket;
 import com.smartcampus.backend.service.TicketService;
 import jakarta.validation.Valid;
