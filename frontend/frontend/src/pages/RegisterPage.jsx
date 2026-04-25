@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { registerUser } from "../api/authApi";
+import "./RegisterPage.css";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -35,46 +36,60 @@ export default function RegisterPage() {
   };
 
   return (
-    <div style={{ padding: "30px", color: "white" }}>
-      <h2>Register</h2>
+    <div className="register-page">
+      <div className="register-card">
+        <h2>Create Account</h2>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          name="name"
-          placeholder="Name"
-          value={form.name}
-          onChange={handleChange}
-        />
-        <br /><br />
+        <form className="register-form" onSubmit={handleSubmit}>
+          <label className="register-input-row" htmlFor="name">
+            <input
+              id="name"
+              name="name"
+              placeholder="Name"
+              value={form.name}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-        />
-        <br /><br />
+          <label className="register-input-row" htmlFor="email">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-        />
-        <br /><br />
+          <label className="register-input-row" htmlFor="password">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-        <select name="role" value={form.role} onChange={handleChange}>
-          <option value="USER">USER</option>
-          <option value="ADMIN">ADMIN</option>
-        </select>
-        <br /><br />
+          <label className="register-select-wrap" htmlFor="role">
+            <select id="role" name="role" value={form.role} onChange={handleChange}>
+              <option value="USER">USER</option>
+              <option value="ADMIN">ADMIN</option>
+            </select>
+          </label>
 
-        <button type="submit">Register</button>
-      </form>
+          <button className="register-button" type="submit">
+            REGISTER
+          </button>
+        </form>
 
-      <p>{message}</p>
+        {message && <p className="register-message">{message}</p>}
+      </div>
     </div>
   );
 }
