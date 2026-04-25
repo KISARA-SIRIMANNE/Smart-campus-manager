@@ -8,7 +8,9 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
-
+  const [rememberMe, setRememberMe] = useState(true);
+  const [googleEmail, setGoogleEmail] = useState("");
+  const [showGoogleForm, setShowGoogleForm] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -44,6 +46,21 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const completeAuth = (authData, successMessage) => {
+    localStorage.setItem("token", authData.token);
+    localStorage.setItem("user", JSON.stringify(authData));
+    localStorage.setItem("rememberMe", rememberMe ? "true" : "false");
+    setMessage(successMessage);
+
+    setTimeout(() => {
+      if (authData.role === "ADMIN") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/user-dashboard");
+      }
+    }, 1000);
   };
 
   return (
