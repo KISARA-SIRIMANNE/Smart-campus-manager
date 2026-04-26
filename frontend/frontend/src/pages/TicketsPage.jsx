@@ -3,21 +3,39 @@ import {
   assignTechnician,
   createTicket,
   getTickets,
+  rejectTicket,
   updateTicketStatus,
 } from "../api/ticketApi";
+import RejectionModal from "../components/RejectionModal";
 import "./TicketsPage.css";
+
+const INCIDENT_TYPES = [
+  "Technical Issue",
+  "Maintenance Request",
+  "Safety Concern",
+  "Facility Damage",
+  "Equipment Problem",
+  "Network Issue",
+  "Cleanliness Issue",
+  "Other"
+];
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [ticketSearchTerm, setTicketSearchTerm] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [rejectingTicketId, setRejectingTicketId] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user"));
 
   const [form, setForm] = useState({
     userId: user?.userId || "",
-    resourceId: "",
-    category: "",
+    incidentType: "",
+    location: "",
     description: "",
     priority: "HIGH",
     preferredContact: "",
@@ -95,14 +113,75 @@ export default function TicketsPage() {
     }
   };
 
+  const handleReject = async (id) => {
+    setRejectingTicketId(id);
+    setShowRejectionModal(true);
+  };
+
+  const handleRejectConfirm = async (reason) => {
+    try {
+      setMessage("");
+      await rejectTicket(rejectingTicketId, reason);
+      setMessage("Ticket rejected successfully!");
+      setShowRejectionModal(false);
+      setRejectingTicketId(null);
+      loadTickets();
+      setTimeout(() => setMessage(""), 4000);
+    } catch (err) {
+      console.error("Reject ticket error:", err);
+      setMessage("Failed to reject ticket");
+      setShowRejectionModal(false);
+      setRejectingTicketId(null);
+    }
+  };
+
+  const handleRejectCancel = () => {
+    setShowRejectionModal(false);
+    setRejectingTicketId(null);
+  };
+
+  const getFilteredTickets = () => {
+    let filtered = tickets;
+
+    // Filter by search term
+    if (ticketSearchTerm.trim()) {
+      const searchLower = ticketSearchTerm.toLowerCase();
+      filtered = filtered.filter((ticket) => {
+        const incidentType = ticket.incidentType?.toLowerCase() || "";
+        const description = ticket.description?.toLowerCase() || "";
+        const priority = ticket.priority?.toLowerCase() || "";
+        const status = ticket.status?.toLowerCase() || "";
+
+        return (
+          incidentType.includes(searchLower) ||
+          description.includes(searchLower) ||
+          priority.includes(searchLower) ||
+          status.includes(searchLower)
+        );
+      });
+    }
+
+    // Filter by priority
+    if (priorityFilter !== "ALL") {
+      filtered = filtered.filter((ticket) => ticket.priority === priorityFilter);
+    }
+
+    // Filter by status
+    if (statusFilter !== "ALL") {
+      filtered = filtered.filter((ticket) => ticket.status === statusFilter);
+    }
+
+    return filtered;
+  };
+
   return (
     <div className="tickets-page">
       <div className="tickets-header">
         <div>
           <p className="page-label">Smart Campus</p>
-          <h1>Incident Ticket Management</h1>
+          <h1>Incident Report System</h1>
           <p>
-            Create, track and manage maintenance tickets for campus resources.
+            Report and track incidents, maintenance requests, and issues across campus.
           </p>
         </div>
 
@@ -115,24 +194,29 @@ export default function TicketsPage() {
 
       {user?.role !== "ADMIN" && (
         <div className="form-card">
-          <h2>Create New Ticket</h2>
+          <h2>Report an Incident</h2>
 
           <form onSubmit={handleCreate} className="ticket-form">
             <div className="form-grid">
-              <input
-                name="resourceId"
-                placeholder="Resource ID"
-                value={form.resourceId}
+              <select
+                name="incidentType"
+                value={form.incidentType}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">Select Incident Type</option>
+                {INCIDENT_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
 
               <input
-                name="category"
-                placeholder="Category"
-                value={form.category}
+                name="location"
+                placeholder="Location (e.g., Building A, Room 101)"
+                value={form.location}
                 onChange={handleChange}
-                required
               />
 
               <select
@@ -172,22 +256,98 @@ export default function TicketsPage() {
 
       {user?.role === "ADMIN" && (
         <div className="info-box">
-          Admin can view tickets, update status and assign technicians.
+          Admin can view incidents, update status and assign technicians.
         </div>
       )}
 
       <div className="section-title">
-        <h2>Tickets List</h2>
-        <span>{tickets.length} Tickets</span>
+        <h2>Incidents List</h2>
+        <span>{getFilteredTickets().length} Incidents</span>
       </div>
 
+      {/* Search Filter for Incidents */}
+      <div className="ticket-search-card">
+        <input
+          type="text"
+          placeholder="Search incidents by type, description, priority, or status..."
+          value={ticketSearchTerm}
+          onChange={(e) => setTicketSearchTerm(e.target.value)}
+          className="ticket-search-input"
+        />
+      </div>
+
+      {/* Priority & Status Filters */}
+      {user?.role === "ADMIN" && (
+        <div className="ticket-filters">
+          <div className="filter-group">
+            <label>Priority:</label>
+            <div className="filter-buttons">
+              <button
+                className={`filter-btn ${priorityFilter === "ALL" ? "active" : ""}`}
+                onClick={() => setPriorityFilter("ALL")}
+              >
+                All
+              </button>
+              <button
+                className={`filter-btn priority-high ${priorityFilter === "HIGH" ? "active" : ""}`}
+                onClick={() => setPriorityFilter("HIGH")}
+              >
+                High
+              </button>
+              <button
+                className={`filter-btn priority-medium ${priorityFilter === "MEDIUM" ? "active" : ""}`}
+                onClick={() => setPriorityFilter("MEDIUM")}
+              >
+                Medium
+              </button>
+              <button
+                className={`filter-btn priority-low ${priorityFilter === "LOW" ? "active" : ""}`}
+                onClick={() => setPriorityFilter("LOW")}
+              >
+                Low
+              </button>
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label>Status:</label>
+            <div className="filter-buttons">
+              <button
+                className={`filter-btn ${statusFilter === "ALL" ? "active" : ""}`}
+                onClick={() => setStatusFilter("ALL")}
+              >
+                All
+              </button>
+              <button
+                className={`filter-btn status-open ${statusFilter === "OPEN" ? "active" : ""}`}
+                onClick={() => setStatusFilter("OPEN")}
+              >
+                Open
+              </button>
+              <button
+                className={`filter-btn status-progress ${statusFilter === "IN_PROGRESS" ? "active" : ""}`}
+                onClick={() => setStatusFilter("IN_PROGRESS")}
+              >
+                In Progress
+              </button>
+              <button
+                className={`filter-btn status-resolved ${statusFilter === "RESOLVED" ? "active" : ""}`}
+                onClick={() => setStatusFilter("RESOLVED")}
+              >
+                Resolved
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {loading ? (
-        <p className="empty-text">Loading tickets...</p>
-      ) : tickets.length === 0 ? (
-        <p className="empty-text">No tickets found.</p>
+        <p className="empty-text">Loading incidents...</p>
+      ) : getFilteredTickets().length === 0 ? (
+        <p className="empty-text">{ticketSearchTerm ? "No incidents match your search." : "No incidents found."}</p>
       ) : (
         <div className="tickets-grid">
-          {tickets.map((ticket) => (
+          {getFilteredTickets().map((ticket) => (
             <div className="ticket-card" key={ticket.id}>
               <div className="card-top">
                 <span className={`priority ${ticket.priority?.toLowerCase()}`}>
@@ -199,9 +359,14 @@ export default function TicketsPage() {
                 </span>
               </div>
 
-              <h3>{ticket.category}</h3>
+              <h3>{ticket.incidentType}</h3>
 
               <div className="ticket-details">
+                {ticket.location && (
+                  <p>
+                    <strong>Location:</strong> {ticket.location}
+                  </p>
+                )}
                 <p>
                   <strong>Description:</strong> {ticket.description}
                 </p>
@@ -213,6 +378,11 @@ export default function TicketsPage() {
                   <strong>Resolution:</strong>{" "}
                   {ticket.resolutionNotes || "N/A"}
                 </p>
+                {ticket.rejectionReason && ticket.status === "REJECTED" && (
+                  <p style={{ color: "#991b1b", backgroundColor: "#fee2e2", padding: "8px", borderRadius: "4px" }}>
+                    <strong>⛔ Rejection Reason:</strong> {ticket.rejectionReason}
+                  </p>
+                )}
               </div>
 
               {user?.role === "ADMIN" && (
@@ -232,12 +402,37 @@ export default function TicketsPage() {
                   >
                     Assign Technician
                   </button>
+                  <button
+                    className="reject-btn"
+                    onClick={() => handleReject(ticket.id)}
+                  >
+                    Reject
+                  </button>
                 </div>
               )}
             </div>
           ))}
         </div>
       )}
+
+      <RejectionModal
+        isOpen={showRejectionModal}
+        itemType="Ticket"
+        onConfirm={handleRejectConfirm}
+        onCancel={handleRejectCancel}
+      />
     </div>
   );
 }
+import React from 'react';
+
+const TicketsPage = () => {
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-4">Tickets</h1>
+      <p className="text-lg">View and manage support tickets.</p>
+    </div>
+  );
+};
+
+export default TicketsPage;

@@ -38,9 +38,9 @@ public class TicketService {
         return ticketRepository.findByStatus(status);
     }
 
-    // FILTER BY CATEGORY
-    public List<Ticket> getTicketsByCategory(String category) {
-        return ticketRepository.findByCategory(category);
+    // FILTER BY INCIDENT TYPE
+    public List<Ticket> getTicketsByIncidentType(String incidentType) {
+        return ticketRepository.findByIncidentType(incidentType);
     }
 
     // FILTER BY PRIORITY
@@ -84,6 +84,17 @@ public class TicketService {
                 ticket.setStatus("IN_PROGRESS");
             }
 
+            return ticketRepository.save(ticket);
+        }
+        return null;
+    }
+
+    // REJECT TICKET
+    public Ticket rejectTicket(String id, String reason) {
+        Ticket ticket = ticketRepository.findById(id).orElse(null);
+        if (ticket != null) {
+            ticket.setStatus("REJECTED");
+            ticket.setRejectionReason(reason);
             return ticketRepository.save(ticket);
         }
         return null;

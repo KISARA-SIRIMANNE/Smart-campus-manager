@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { getDashboardSummary } from "../api/dashboardApi";
+import { fixMissingCategories } from "../api/resourceApi";
 import "./AdminDashboard.css";
 
 export default function AdminDashboard() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [fixingResources, setFixingResources] = useState(false);
+  const [fixMessage, setFixMessage] = useState("");
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -24,6 +27,28 @@ export default function AdminDashboard() {
 
     fetchSummary();
   }, []);
+
+  const handleFixMissingCategories = async () => {
+    try {
+      setFixingResources(true);
+      setFixMessage("");
+      const res = await fixMissingCategories("Other");
+      setFixMessage(
+        `✅ Successfully fixed ${res.data.resourcesFixed} resources with missing categories!`
+      );
+      // Refresh dashboard summary
+      const summaryRes = await getDashboardSummary();
+      setSummary(summaryRes.data);
+      setTimeout(() => setFixMessage(""), 5000);
+    } catch (err) {
+      console.error("Fix resources error:", err);
+      setFixMessage(
+        "❌ Failed to fix resources. Please check the console for details."
+      );
+    } finally {
+      setFixingResources(false);
+    }
+  };
 
   const stats = useMemo(() => {
     if (!summary) return [];
@@ -132,6 +157,24 @@ export default function AdminDashboard() {
           ))}
         </div>
 
+        {fixMessage && (
+          <div
+            className={`fix-message ${fixMessage.includes("✅") ? "success" : "error"}`}
+          >
+            {fixMessage}
+          </div>
+        )}
+
+        <button
+          className="fix-resources-btn"
+          onClick={handleFixMissingCategories}
+          disabled={fixingResources}
+        >
+          {fixingResources
+            ? "Fixing Resources..."
+            : "🔧 Fix Resources Without Category"}
+        </button>
+
         <div className="dashboard-bottom-grid">
           <div className="dashboard-panel">
             <div className="panel-header">
@@ -189,3 +232,15 @@ export default function AdminDashboard() {
     </div>
   );
 }
+import React from 'react';
+
+const AdminDashboard = () => {
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-4">Admin Dashboard</h1>
+      <p className="text-lg">Admin controls and overview.</p>
+    </div>
+  );
+};
+
+export default AdminDashboard;

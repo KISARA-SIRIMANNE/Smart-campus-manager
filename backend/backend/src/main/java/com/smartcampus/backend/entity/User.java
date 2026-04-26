@@ -27,6 +27,10 @@ public class User {
     @NotBlank(message = "Password is required")
     private String password;
 
+    private String googleId;
+
     @NotBlank(message = "Role is required")
     private String role; // USER or ADMIN
+
+    private String profilePicture; // Base64 encoded image
 }

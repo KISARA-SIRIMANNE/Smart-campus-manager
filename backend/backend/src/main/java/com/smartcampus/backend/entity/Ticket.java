@@ -20,34 +20,21 @@ public class Ticket {
     @NotBlank(message = "User ID is required")
     private String userId;
 
-    @NotBlank(message = "Resource ID is required")
-    private String resourceId;
+    private String location;
 
-    @NotBlank(message = "Category is required")
-    @Pattern(
-            regexp = "^[A-Z][a-zA-Z0-9 ]*$",
-            message = "Category must start with a capital letter and contain only letters and numbers"
-    )
-    private String category;
+    @NotBlank(message = "Incident type is required")
+    private String incidentType;
 
     @NotBlank(message = "Description is required")
-    @Pattern(
-            regexp = "^[A-Z][a-zA-Z0-9 ,.]*$",
-            message = "Description must start with a capital letter"
-    )
     private String description;
 
     @NotBlank(message = "Priority is required")
     private String priority;
 
-    @NotBlank(message = "Phone number is required")
-    @Pattern(
-            regexp = "^[0-9]{10}$",
-            message = "Phone number must be exactly 10 digits"
-    )
     private String preferredContact;
 
     private String status;
+    private String rejectionReason;
     private String assignedTechnicianId;
     private String resolutionNotes;
 }
