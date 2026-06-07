@@ -1,8 +1,8 @@
-# StudyShare
+# Smart campus manager system
 
 ## Overview
 
-StudyShare is a web-based platform designed to help students share, manage, and access academic learning resources efficiently. The system provides a centralized environment where students can upload study materials, browse resources shared by others, and organize their learning activities through an integrated Study Planner.
+Smart campus manager system is a web-based platform designed to help students share, manage, and access academic learning resources efficiently. The system provides a centralized environment where students can upload study materials, browse resources shared by others, and organize their learning activities through an integrated Study Planner.
 
 The goal of StudyShare is to promote collaborative learning while helping students stay organized and productive throughout their academic journey.
 
